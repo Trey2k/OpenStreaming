@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func createViewersTable() error {
+func createUsersTable() error {
 	conn, err := ConnectDB()
 	if err != nil {
 		return err
@@ -13,7 +13,7 @@ func createViewersTable() error {
 
 	defer conn.Close()
 
-	sql, err := ioutil.ReadFile("/root/resources/sql/viewers.sql")
+	sql, err := ioutil.ReadFile("/root/resources/sql/users.sql")
 	if err != nil {
 		return err
 	}

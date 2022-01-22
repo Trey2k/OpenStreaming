@@ -10,6 +10,7 @@ services:
       - EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - TwitchClientID=${TwitchClientID}
       - TwitchClientSecret=${TwitchClientSecret}
+      - URL=${URL}
     build: .
     ports:
       - 80:80

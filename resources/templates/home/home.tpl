@@ -1,3 +1,3 @@
 {{define "body"}}
-    Login with twitch <a href="{{.TwitchAuthURL}}">Portal</a>
+    Welcome <a href="{{.DisplayName}}">Portal</a>
 {{end}}

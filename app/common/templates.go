@@ -23,7 +23,8 @@ func init() {
 
 	Templates = &TemplateStruct{
 		HomeTemplates: map[string]*template.Template{
-			"home": template.Must(home.ParseFiles("/root/resources/templates/home/home.tpl")),
+			"home":  template.Must(home.ParseFiles("/root/resources/templates/home/home.tpl")),
+			"login": template.Must(home.ParseFiles("/root/resources/templates/home/login.tpl")),
 		},
 	}
 }
