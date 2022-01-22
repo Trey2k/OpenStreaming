@@ -1,0 +1,4 @@
+.env
+*.bak
+resources/certs/fullchain1.pem
+resources/certs/privkey1.pem
