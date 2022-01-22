@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -20,22 +19,26 @@ func init() {
 		os.Exit(1)
 	}
 
-	_, err = conn.Query(context.Background(), "SELECT * FROM viewers")
-	if err != nil && err != pgx.ErrNoRows {
-		log.Println("Viewers table not found - creating now")
-		err = createViewersTable()
-		if err != nil {
-			panic(err)
-		}
+	log.Println("Viewers table being reconstructed")
+	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.viewers")
+	if err != nil {
+		panic(err)
 	}
 
-	_, err = conn.Query(context.Background(), "SELECT * FROM users")
-	if err != nil && err != pgx.ErrNoRows {
-		log.Println("Users table not found - creating now")
-		err = createUsersTable()
-		if err != nil {
-			panic(err)
-		}
+	err = createViewersTable()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("Users table being reconstructed")
+	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.users")
+	if err != nil {
+		panic(err)
+	}
+
+	err = createUsersTable()
+	if err != nil {
+		panic(err)
 	}
 
 }

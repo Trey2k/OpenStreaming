@@ -1,6 +1,7 @@
 package home
 
 import (
+	"encoding/gob"
 	"fmt"
 	"net/http"
 
@@ -24,11 +25,13 @@ func init() {
 		MaxAge: 60 * 15,
 		Secure: true,
 	}
+
+	gob.Register(&user.UserStruct{})
 }
 
-func createSession(req *http.Request, rw http.ResponseWriter, userID int64) {
+func createSession(req *http.Request, rw http.ResponseWriter, user *user.UserStruct) {
 	session, err := store.Get(req, "session-token")
-	session.Values["id"] = userID
+	session.Values["user"] = user
 	err = session.Save(req, rw)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -36,25 +39,25 @@ func createSession(req *http.Request, rw http.ResponseWriter, userID int64) {
 	}
 }
 
-func getSession(s *sessions.Session) (int64, bool) {
-	val := s.Values["id"]
-	id, ok := val.(int64)
+func getSession(s *sessions.Session) (*user.UserStruct, bool) {
+	val := s.Values["user"]
+	user, ok := val.(*user.UserStruct)
 	if !ok {
-		return id, false
+		return user, false
 	}
-	return id, true
+	return user, true
 }
 
-func isAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, int64) {
+func isAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, *user.UserStruct) {
 	session, err := store.Get(req, "session-token")
 	if err == nil {
-		id, authenitcated := getSession(session)
+		user, authenitcated := getSession(session)
 		if authenitcated {
-			return true, id
+			return true, user
 		}
 	}
 
-	return false, 0
+	return false, nil
 }
 
 func TwitchOAuthEndpoint() http.HandlerFunc {
@@ -67,7 +70,7 @@ func TwitchOAuthEndpoint() http.HandlerFunc {
 				panic(err)
 			}
 
-			createSession(req, rw, int64(user.ID))
+			createSession(req, rw, user)
 
 			http.Redirect(rw, req, "https://weaselfoss.dev/", 200)
 		}

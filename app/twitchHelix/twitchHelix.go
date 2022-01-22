@@ -48,11 +48,14 @@ func NewHelixClient(RefreshToken string) (*HelixClientStruct, error) {
 
 	err := client.refreshToken()
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	err = client.getUserData()
-	return client, err
+	if err != nil {
+		panic(err)
+	}
+	return client, nil
 }
 
 func (client *HelixClientStruct) refreshToken() error {
@@ -71,23 +74,34 @@ func (client *HelixClientStruct) refreshToken() error {
 	return json.NewDecoder(resp.Body).Decode(&client.Refresh)
 }
 
+func (client *HelixClientStruct) doUserRequest(request *http.Request) (*http.Response, error) {
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", client.Refresh.AccessToken))
+	request.Header.Add("Client-Id", os.Getenv("TwitchClientID"))
+	webClient := &http.Client{}
+
+	resp, err := webClient.Do(request)
+	if err != nil {
+		return resp, err
+	}
+
+	err = client.refreshToken()
+	return resp, err
+}
+
 func (client *HelixClientStruct) getUserData() error {
 	request, err := http.NewRequest("GET", "https://api.twitch.tv/helix/users", nil)
 	if err != nil {
 		return err
 	}
-	fmt.Println(client.Refresh.AccessToken)
-	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", client.Refresh.AccessToken))
-	request.Header.Add("Client-Id", os.Getenv("TwitchClientID"))
 
-	webClient := &http.Client{}
+	resp, err := client.doUserRequest(request)
 
-	fmt.Println(request)
-
-	resp, err := webClient.Do(request)
+	var temp GetUserData
+	err = json.NewDecoder(resp.Body).Decode(&temp)
+	fmt.Println(temp)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	return json.NewDecoder(resp.Body).Decode(&client.User)
+	client.User = temp.Data[0]
+	return err
 }

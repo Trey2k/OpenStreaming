@@ -11,8 +11,6 @@ func createViewersTable() error {
 		return err
 	}
 
-	defer conn.Close()
-
 	sql, err := ioutil.ReadFile("/root/resources/sql/viewers.sql")
 	if err != nil {
 		return err

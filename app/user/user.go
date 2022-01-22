@@ -29,33 +29,13 @@ func NewUser(refreshToken string) (*UserStruct, error) {
 	return user, err
 }
 
-func GetUser(id int) (*UserStruct, error) {
-	user := &UserStruct{}
-
-	conn, err := database.ConnectDB()
-	if err != nil {
-		return nil, err
-	}
-
-	var oldToken string
-	err = conn.QueryRow(context.Background(), `SELECT * FROM public.users WHERE id=$1`, id).Scan(&user.ID, &user.TwitchID, &user.DiscordID, &oldToken)
-	if err != nil {
-		return nil, err
-	}
-
-	user.HelixClient, err = twitchHelix.NewHelixClient(oldToken)
-
-	return user, err
-}
-
 func (user *UserStruct) FetchDB() error {
 	conn, err := database.ConnectDB()
 	if err != nil {
 		return err
 	}
 
-	var oldToken string
-	err = conn.QueryRow(context.Background(), `SELECT * FROM public.users WHERE "twitchID"=$1`, user.HelixClient.User.ID).Scan(&user.ID, &user.TwitchID, &user.DiscordID, &oldToken)
+	err = conn.QueryRow(context.Background(), `SELECT * FROM public.users WHERE "twitchID"=$1`, user.HelixClient.User.ID).Scan(&user.ID, &user.TwitchID, &user.DiscordID)
 	return err
 }
 
@@ -65,7 +45,10 @@ func (user *UserStruct) CreateUser() error {
 		return err
 	}
 
-	_, err = conn.Exec(context.Background(), `INSERT INTO public.users("twitchID", "refreshToken") VALUES ($1, $2) `, user.HelixClient.User.ID, user.HelixClient.Refresh.RefreshToken)
+	_, err = conn.Exec(context.Background(), `INSERT INTO public.users("twitchID") VALUES ($1) `, user.HelixClient.User.ID)
 	user.TwitchID = user.HelixClient.User.ID
+	if err != nil {
+		panic(err)
+	}
 	return err
 }

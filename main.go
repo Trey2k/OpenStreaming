@@ -13,7 +13,9 @@ import (
 func main() {
 	router := mux.NewRouter()
 	http.HandleFunc("/", httpInterceptor(router))
-	router.HandleFunc("/", home.GetHomePage).Methods("GET")
+	router.Handle("/", http.RedirectHandler("/home", 200)).Methods("GET")
+	router.HandleFunc("/home", home.GetHomePage).Methods("GET")
+	router.HandleFunc("/login", home.GetLoginPage).Methods("GET")
 	router.HandleFunc("/twitch", home.TwitchOAuthEndpoint()).Methods("GET")
 
 	server := &http.Server{
