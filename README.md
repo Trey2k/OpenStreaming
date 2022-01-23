@@ -1,7 +1,7 @@
 ### OpenStreaming
 
 # About
-This is a WIP project. To not use.
+This is a WIP project. Do Not Use.
 
 Some things to note, since this project is in active development and not in use. The database is wiped every start up. This will be changed later on down the line. But it has made things more convenient for me currently.
 
