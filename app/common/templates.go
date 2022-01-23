@@ -6,7 +6,9 @@ import (
 
 //TemplateStruct struct for templates
 type TemplateStruct struct {
-	HomeTemplates map[string]*template.Template
+	HomeLayout *template.Template
+	HomePage   *template.Template
+	LoginPage  *template.Template
 }
 
 //Templates the pre compiled teplaltes
@@ -15,16 +17,11 @@ var Templates *TemplateStruct
 //InitTemplates pre compile the templares
 func init() {
 
-	var homeLayout = template.Must(template.ParseFiles("/root/resources/templates/home/layout.tpl"))
-	home, err := homeLayout.Clone()
-	if err != nil {
-		panic(err)
-	}
-
+	layout := template.Must(template.ParseFiles("/root/resources/templates/home/layout.tpl"))
+	homeLayout := template.Must(layout.Clone())
 	Templates = &TemplateStruct{
-		HomeTemplates: map[string]*template.Template{
-			"home":  template.Must(home.ParseFiles("/root/resources/templates/home/home.tpl")),
-			"login": template.Must(home.ParseFiles("/root/resources/templates/home/login.tpl")),
-		},
+
+		LoginPage: template.Must(layout.ParseFiles("/root/resources/templates/home/login.tpl")),
+		HomePage:  template.Must(homeLayout.ParseFiles("/root/resources/templates/home/home.tpl")),
 	}
 }

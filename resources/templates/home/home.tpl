@@ -1,3 +1,5 @@
 {{define "body"}}
-    Welcome {{.DisplayName}}
+    <div class="center">
+        Welcome {{.DisplayName}}
+    </div>
 {{end}}

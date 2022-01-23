@@ -12,11 +12,18 @@ import (
 
 func main() {
 	router := mux.NewRouter()
+
 	http.HandleFunc("/", httpInterceptor(router))
 	router.Handle("/", http.RedirectHandler("/home", 200)).Methods("GET")
+
+	// Main site
 	router.HandleFunc("/home", home.GetHomePage).Methods("GET")
 	router.HandleFunc("/login", home.GetLoginPage).Methods("GET")
 	router.HandleFunc("/twitch", home.TwitchOAuthEndpoint()).Methods("GET")
+
+	// Static file server
+	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("/root/resources/static")))
+	http.Handle("/static/", fileServer)
 
 	server := &http.Server{
 		Addr: ":443",

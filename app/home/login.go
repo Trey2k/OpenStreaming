@@ -12,18 +12,18 @@ import (
 func GetLoginPage(rw http.ResponseWriter, req *http.Request) {
 	type Page struct {
 		Title         string
+		LoggedIn      bool
 		TwitchAuthURL string
-		DisplayName   string
 	}
 
-	fmt.Println("test")
 	p := Page{
 		Title: "OpenStreaming - Login",
 		TwitchAuthURL: fmt.Sprintf("https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=%s",
 			os.Getenv("TwitchClientID"), "https://weaselfoss.dev/twitch", twitchHelix.Scope),
+		LoggedIn: false,
 	}
 
-	err := common.Templates.HomeTemplates["login"].ExecuteTemplate(rw, "base", p)
+	err := common.Templates.LoginPage.ExecuteTemplate(rw, "base", p)
 	if err != nil {
 		panic(err)
 	}

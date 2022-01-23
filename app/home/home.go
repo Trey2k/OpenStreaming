@@ -1,7 +1,6 @@
 package home
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Trey2k/OpenStreaming/app/common"
@@ -11,26 +10,25 @@ import (
 func GetHomePage(rw http.ResponseWriter, req *http.Request) {
 
 	type Page struct {
-		Title         string
-		TwitchAuthURL string
-		DisplayName   string
+		Title       string
+		LoggedIn    bool
+		DisplayName string
 	}
 
 	isAuthenticated, usr := isAuthenticated(rw, req)
-	fmt.Println("Testing ", usr, isAuthenticated)
+
 	if !isAuthenticated {
 		http.Redirect(rw, req, "/login", 403)
 		return
 	}
-	fmt.Println("test1")
 
 	p := Page{
 		Title:       "OpenStreaming - Home",
 		DisplayName: usr.HelixClient.User.DisplayName,
+		LoggedIn:    true,
 	}
 
-	err := common.Templates.HomeTemplates["home"].ExecuteTemplate(rw, "base", p)
-	fmt.Println()
+	err := common.Templates.HomePage.ExecuteTemplate(rw, "base", p)
 	if err != nil {
 		panic(err)
 	}
