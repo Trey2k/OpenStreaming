@@ -1,40 +1,59 @@
-body {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-  background-color: #3d3d3d;
+body#base {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background-color: #3d3d3d;
+}
+
+body#min {
+    height: 1080px;
+    width: 1920px;
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+div#image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100px;
+    width: 100px;
 }
 
 main {
-  flex: 1 0 auto;
+    flex: 1 0 auto;
 }
 
 .content {
-  margin-bottom: auto;
-  color: white;
-}
-
-.nav-wrapper {
-  padding-left: 10vh;
-  padding-right: 10vh;
+    color: white;
 }
 
 .nav-wrapper,
-.page-footer  {
-  background-color: #4b4b4b;
-
+.page-footer,
+nav {
+    background-color: #4b4b4b;
 }
-.button:hover  {
-  background-color: teal;
 
+.nav-wrapper {
+    margin-left: 10vh;
+    margin-right: 10vh;
 }
+
+.button:hover {
+    background-color: teal;
+}
+
+.button.active {
+    background-color: teal;
+}
+
 
 .center {
-  padding: 15% 0;
-  text-align: center;
+    padding: 15% 0;
+    text-align: center;
 }
 
 .tealText {
-  color: teal;
+    color: teal;
 }
-

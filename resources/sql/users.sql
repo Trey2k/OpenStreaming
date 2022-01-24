@@ -1,7 +1,8 @@
 CREATE TABLE public.users (
     id bigint NOT NULL,
     "twitchID" character varying(80) NOT NULL,
-    "discordID" character varying(80) NOT NULL DEFAULT ''::character varying
+    "discordID" character varying(80) NOT NULL DEFAULT ''::character varying,
+    "refreshToken" character varying(80) NOT NULL
 );
 
 CREATE SEQUENCE public.users_id_seq

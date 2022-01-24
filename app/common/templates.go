@@ -6,9 +6,9 @@ import (
 
 //TemplateStruct struct for templates
 type TemplateStruct struct {
-	HomeLayout *template.Template
-	HomePage   *template.Template
-	LoginPage  *template.Template
+	DashboardPage *template.Template
+	LoginPage     *template.Template
+	OverlayPage   *template.Template
 }
 
 //Templates the pre compiled teplaltes
@@ -17,11 +17,14 @@ var Templates *TemplateStruct
 //InitTemplates pre compile the templares
 func init() {
 
-	layout := template.Must(template.ParseFiles("/root/resources/templates/home/layout.tpl"))
+	layout := template.Must(template.ParseFiles("/root/resources/templates/dashboard/layout.tpl"))
 	homeLayout := template.Must(layout.Clone())
+	loginLayout := template.Must(layout.Clone())
+	overlayLayout := template.Must(layout.Clone())
 	Templates = &TemplateStruct{
 
-		LoginPage: template.Must(layout.ParseFiles("/root/resources/templates/home/login.tpl")),
-		HomePage:  template.Must(homeLayout.ParseFiles("/root/resources/templates/home/home.tpl")),
+		LoginPage:     template.Must(loginLayout.ParseFiles("/root/resources/templates/dashboard/login.tpl")),
+		DashboardPage: template.Must(homeLayout.ParseFiles("/root/resources/templates/dashboard/dashboard.tpl")),
+		OverlayPage:   template.Must(overlayLayout.ParseFiles("/root/resources/templates/dashboard/overlay.tpl")),
 	}
 }

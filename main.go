@@ -6,7 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Trey2k/OpenStreaming/app/home"
+	"github.com/Trey2k/OpenStreaming/app/api"
+	"github.com/Trey2k/OpenStreaming/app/dashboard"
 	"github.com/gorilla/mux"
 )
 
@@ -17,10 +18,14 @@ func main() {
 	router.Handle("/", http.RedirectHandler("/home", 200)).Methods("GET")
 
 	// Main site
-	router.HandleFunc("/home", home.GetHomePage).Methods("GET")
-	router.HandleFunc("/login", home.GetLoginPage).Methods("GET")
-	router.HandleFunc("/twitch", home.TwitchOAuthEndpoint()).Methods("GET")
+	router.HandleFunc("/home", dashboard.AuthenticatedMW(dashboard.GetHomePage)).Methods("GET")
+	router.HandleFunc("/login", dashboard.GetLoginPage).Methods("GET")
+	router.HandleFunc("/overlay", dashboard.AuthenticatedMW(dashboard.OverlayHandler)).Methods("GET")
+	router.HandleFunc("/twitch", dashboard.TwitchOAuthEndpoint()).Methods("GET")
 
+	// Api endpoints
+	router.HandleFunc("/api/getEvents", api.GetEventHandler).Methods("GET")
+	router.HandleFunc("/api/toggleBot", api.ToggleBotHandler).Methods("GET")
 	// Static file server
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("/root/resources/static")))
 	http.Handle("/static/", fileServer)

@@ -1,11 +1,9 @@
-package home
+package dashboard
 
 import (
-	"encoding/gob"
-	"fmt"
 	"net/http"
 
-	"github.com/Trey2k/OpenStreaming/app/user"
+	"github.com/Trey2k/OpenStreaming/app/database"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
@@ -26,12 +24,11 @@ func init() {
 		Secure: true,
 	}
 
-	gob.Register(&user.UserStruct{})
 }
 
-func createSession(req *http.Request, rw http.ResponseWriter, user *user.UserStruct) {
+func createSession(req *http.Request, rw http.ResponseWriter, id int) {
 	session, err := store.Get(req, "session-token")
-	session.Values["user"] = user
+	session.Values["id"] = id
 	err = session.Save(req, rw)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -39,38 +36,37 @@ func createSession(req *http.Request, rw http.ResponseWriter, user *user.UserStr
 	}
 }
 
-func getSession(s *sessions.Session) (*user.UserStruct, bool) {
-	val := s.Values["user"]
-	user, ok := val.(*user.UserStruct)
+func getSession(s *sessions.Session) (int, bool) {
+	val := s.Values["id"]
+	id, ok := val.(int)
 	if !ok {
-		return user, false
+		return id, false
 	}
-	return user, true
+	return id, true
 }
 
-func isAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, *user.UserStruct) {
+func IsAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, int) {
 	session, err := store.Get(req, "session-token")
 	if err == nil {
-		user, authenitcated := getSession(session)
+		id, authenitcated := getSession(session)
 		if authenitcated {
-			return true, user
+			return true, id
 		}
 	}
 
-	return false, nil
+	return false, 0
 }
 
 func TwitchOAuthEndpoint() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		codes, ok := req.URL.Query()["code"]
-		fmt.Println(codes[0])
 		if ok && len(codes) > 0 {
-			user, err := user.NewUser(codes[0])
+			user, err := database.NewUser(codes[0])
 			if err != nil {
 				panic(err)
 			}
 
-			createSession(req, rw, user)
+			createSession(req, rw, user.ID)
 
 			http.Redirect(rw, req, "https://weaselfoss.dev/", 200)
 		}

@@ -3,6 +3,7 @@ module github.com/Trey2k/OpenStreaming
 go 1.17
 
 require (
+	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1

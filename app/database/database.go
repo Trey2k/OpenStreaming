@@ -13,7 +13,7 @@ var Pool *pgxpool.Pool
 
 // Create any tables that do not exist.
 func init() {
-	conn, err := ConnectDB()
+	conn, err := connectDB()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -43,7 +43,7 @@ func init() {
 
 }
 
-func ConnectDB() (*pgxpool.Pool, error) {
+func connectDB() (*pgxpool.Pool, error) {
 	if Pool == nil {
 		var err error
 		Pool, err = pgxpool.Connect(context.Background(), fmt.Sprintf("postgres://%s:%s@%s/%s",

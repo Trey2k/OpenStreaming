@@ -6,7 +6,7 @@ import (
 )
 
 func createViewersTable() error {
-	conn, err := ConnectDB()
+	conn, err := connectDB()
 	if err != nil {
 		return err
 	}

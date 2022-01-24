@@ -6,7 +6,7 @@ import (
 )
 
 func createUsersTable() error {
-	conn, err := ConnectDB()
+	conn, err := connectDB()
 	if err != nil {
 		return err
 	}

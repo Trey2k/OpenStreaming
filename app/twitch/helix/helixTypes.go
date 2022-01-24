@@ -1,4 +1,4 @@
-package twitchHelix
+package helix
 
 import "time"
 
