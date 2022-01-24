@@ -39,6 +39,15 @@ $(function()
         }
     });
 
+    apiClient.onEvent(function(event) {
+        switch(event.type) {
+        case MessageEvent: {
+            var message = event.message;
+            console.log(event.DisplayName+":", message);
+        }
+        }
+    });
+
     $("#checkEvents").click(function() {
         events = apiClient.getEvents();
         if (events != null) {

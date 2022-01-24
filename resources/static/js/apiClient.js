@@ -17,5 +17,16 @@ class APIClient {
         xmlHttp.send(null);
     }
 
-
+    onEvent(eventHandler) {
+        this.update=setInterval(function() {
+            events = this.getEvents();
+            if (events != null) {
+                for (var i = 0; i < events.length; i++) {
+                    eventHandler(events[i]);
+                }
+            }
+        }, 1000);
+    }
 }
+
+const InvalidEvent = 0, TestEvent = 1, TwitchMessageEvent = 2;
