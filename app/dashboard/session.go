@@ -63,12 +63,13 @@ func TwitchOAuthEndpoint() http.HandlerFunc {
 		if ok && len(codes) > 0 {
 			user, err := database.NewUser(codes[0])
 			if err != nil {
-				panic(err)
+				http.Redirect(rw, req, "login", 403)
+				return
 			}
 
 			createSession(req, rw, user.ID)
 
-			http.Redirect(rw, req, "https://weaselfoss.dev/", 200)
+			http.Redirect(rw, req, "/dashboard", 200)
 		}
 	}
 }

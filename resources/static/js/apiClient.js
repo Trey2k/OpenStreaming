@@ -1,6 +1,7 @@
 class APIClient {
     constructor() {
         this.events = null;
+        this.on = false;
     }
 
     getEvents() {
@@ -18,14 +19,15 @@ class APIClient {
     }
 
     onEvent(eventHandler) {
-        this.update=setInterval(function() {
-            events = this.getEvents();
+        var client = this;
+        setInterval(function() {
+            var events = client.getEvents();
             if (events != null) {
                 for (var i = 0; i < events.length; i++) {
                     eventHandler(events[i]);
                 }
             }
-        }, 1000);
+        }, 1000);   
     }
 }
 

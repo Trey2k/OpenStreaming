@@ -14,7 +14,7 @@ func GetLoginPage(rw http.ResponseWriter, req *http.Request) {
 	p := Page{
 		Title: "OpenStreaming - Login",
 		StringOne: fmt.Sprintf("https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=%s",
-			os.Getenv("TwitchClientID"), "https://weaselfoss.dev/twitch", helix.Scope),
+			os.Getenv("TwitchClientID"), fmt.Sprintf("%s/twitch", os.Getenv("URL")), helix.Scope),
 		LoggedIn: false,
 	}
 

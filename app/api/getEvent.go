@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/Trey2k/OpenStreaming/app/dashboard"
@@ -17,7 +16,7 @@ func GetEventHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 	usr := database.GetUser(id)
 	events := usr.GetEvents()
-	fmt.Println("Events:", events)
+
 	err := json.NewEncoder(rw).Encode(events)
 	if err != nil {
 		panic(err)

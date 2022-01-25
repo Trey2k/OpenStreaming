@@ -33,20 +33,21 @@ $(function()
     });
 
     $("#toggleBot").click(function() {
+        apiClient.toggleBot();
         botOn = !botOn;
         if (botOn) {
-            apiClient.toggleBot();
+            apiClient.onEvent(function(event) {
+                switch(event.Type) {
+                case TwitchMessageEvent: {
+                    var message = event.Data.MessageContent;
+                    console.log(event.Data.UserDisplay+":", message);
+                }
+                }
+            });
         }
     });
 
-    apiClient.onEvent(function(event) {
-        switch(event.type) {
-        case MessageEvent: {
-            var message = event.message;
-            console.log(event.DisplayName+":", message);
-        }
-        }
-    });
+    
 
     $("#checkEvents").click(function() {
         events = apiClient.getEvents();

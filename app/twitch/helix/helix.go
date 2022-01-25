@@ -66,7 +66,7 @@ func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, event
 
 	err = client.getUserData()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	client.ChatBot, err = chatbot.NewChatBot(client.UserData.Login, client.Refresh.AccessToken, eventChan)
@@ -126,6 +126,9 @@ func (client *HelixClientStruct) getUserData() error {
 	fmt.Println(temp)
 	if err != nil {
 		panic(err)
+	}
+	if len(temp.Data) == 0 {
+		return fmt.Errorf("No user data found")
 	}
 	client.UserData = temp.Data[0]
 	return err
