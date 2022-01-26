@@ -1,6 +1,6 @@
 function showChatBot() {
     $("#main").hide();
-    $("#mainButton").removeClass("active")
+    $("#mainButton").removeClass("active");
     $("#chatBot").show();
     $("#chatBotButton").addClass("active");
 }

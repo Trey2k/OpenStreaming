@@ -14,4 +14,6 @@
         </div>
         <a class="waves-effect waves-light btn-small"id="checkEvents">Check Events</a>
     </div>
+
+    
 {{end}}

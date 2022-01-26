@@ -1,29 +1,38 @@
-(function(window) {
-    var apiCLient = new APIClient;
+$(function()
+{
+  var output = document.getElementById("output");
+  var input = document.getElementById("input");
+  var ws;
 
-    var refresh = function() {
-        apiCLient.getEvents();
-        requestAnimationFrame(animateImage);
+  var print = function(message) {
+    var d = document.createElement("div");
+    d.innerHTML = message;
+    output.appendChild(d);
+  };
+
+  $("#open").click(function() {
+    var webSocket = new WebSocket("wss://weaselfoss.dev/ws");
+    webSocket.onopen = function (event) {
+      webSocket.send("Hello World!");
     }
+    
 
-    imgLeft++;
-    imgTop += slope;
+  });
 
+  $("#send").click(function() {
+    if (!ws) {
+      return false;
+    }
+    print("SEND: " + input.value);
+    ws.send(input.value);
+    return false;
+  });
 
-    window.onload = function() {
-        imgObj = document.getElementById('image');
-
-        screenWidth = window.innerWidth;
-        screenHeight = window.innerHeight;
-
-        imgHeight = imgObj.offsetHeight;
-        imgWidth = imgObj.offsetWidth;
-
-        slope = (screenHeight - imgHeight) / (screenWidth - imgWidth);
-
-        finalTop = screenHeight - imgHeight;
-        finalLeft = screenWidth - imgWidth;
-
-        requestAnimationFrame(refresh);
-    };
-})(window);
+  $("#close").click(function() {
+    if (!ws) {
+      return false;
+    }
+    ws.close();
+    return false;
+  });
+});

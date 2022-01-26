@@ -25,6 +25,8 @@ func main() {
 	// Api endpoints
 	router.HandleFunc("/api/getEvents", api.GetEventHandler).Methods("GET")
 	router.HandleFunc("/api/toggleBot", api.ToggleBotHandler).Methods("GET")
+	router.HandleFunc("/ws", api.WebsocketHandler)
+
 	// Static file server
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("/root/resources/static")))
 	http.Handle("/static/", fileServer)
@@ -34,6 +36,8 @@ func main() {
 	}
 
 	go http.ListenAndServe(":80", http.RedirectHandler("/dashboard", 200))
+
+	go api.Echo()
 
 	fmt.Println("Started TLS server in Cert Manager mode.\nDBHost: ", os.Getenv("DATABASE_HOST"))
 	err := server.ListenAndServeTLS("/root/resources/certs/fullchain1.pem", "/root/resources/certs/privkey1.pem")
