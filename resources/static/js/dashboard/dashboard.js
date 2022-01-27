@@ -12,22 +12,23 @@ function showMain() {
     $("#mainButton").addClass("active");
 }
 
-$(function()
-{
+$(document).ready(function(){
 
     var apiClient = new APIClient;
     var botOn = false;
     showMain();
+    $('.sidenav').sidenav();
+    $('.tabs').tabs();
 
     $(".button").click(function() {
         switch(this.id) {
             case "chatBotButton":
                 showChatBot();
-                console.log("ChatBot");
+                $('.sidenav').sidenav("close");
                 break;
             case "mainButton":
                 showMain();
-                console.log("main");
+                $('.sidenav').sidenav("close");
                 break;
         }
     });
@@ -59,5 +60,9 @@ $(function()
         
 
     });
-});
 
+    
+        
+    
+});
+     

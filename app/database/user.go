@@ -8,11 +8,13 @@ import (
 )
 
 type UserStruct struct {
-	ID          int
-	TwitchID    string
-	DiscordID   string
+	ID        int
+	TwitchID  string
+	DiscordID string
+
 	Events      []common.EventStruct
 	HelixClient *helix.HelixClientStruct
+	Overlay     *OverlayStruct
 	eventChan   chan common.EventStruct
 }
 
@@ -43,6 +45,14 @@ func NewUser(refreshToken string) (*UserStruct, error) {
 	}
 	users[user.ID] = user
 
+	user.Overlay, err = GetOverlayByUserID(user.ID)
+	if err != nil {
+		err = createOverlay(user)
+		if err != nil {
+			return user, err
+		}
+	}
+
 	go user.ListenForEvents()
 
 	return user, err
@@ -71,13 +81,20 @@ func (user *UserStruct) FetchDB() error {
 	return err
 }
 
-func (user *UserStruct) SendEvent(event common.EventStruct) {
+func (user *UserStruct) SendEvent(event common.EventStruct) error {
 	user.Events = append(user.Events, event)
+	if user.Overlay.Websocket != nil {
+		err := user.Overlay.Websocket.WriteJSON(event)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (user *UserStruct) GetEvents() []common.EventStruct {
 	temp := user.Events
-	user.Events = nil
 	return temp
 }
 
@@ -88,9 +105,6 @@ func UpdateRefreshToken(token, twitchID string) error {
 	}
 
 	_, err = conn.Exec(context.Background(), `UPDATE public.users SET "refreshToken"=$1 WHERE "twitchID"=$2;`, token, twitchID)
-	if err != nil {
-		panic(err)
-	}
 	return err
 }
 
@@ -102,8 +116,5 @@ func (user *UserStruct) CreateUser() error {
 
 	_, err = conn.Exec(context.Background(), `INSERT INTO public.users("twitchID", "refreshToken") VALUES ($1, $2) `, user.HelixClient.UserData.ID, user.HelixClient.Refresh.RefreshToken)
 	user.TwitchID = user.HelixClient.UserData.ID
-	if err != nil {
-		panic(err)
-	}
 	return err
 }

@@ -12,9 +12,31 @@ import (
 	"github.com/Trey2k/OpenStreaming/app/twitch/chatbot"
 )
 
-const Scope = "channel:moderate chat:edit chat:read whispers:read whispers:edit user:read:follows user:read:subscriptions user:read:email user:read:broadcast user:read:blocked_users user:manage:blocked_users user:edit:follows user:edit moderator:manage:chat_settings moderator:read:chat_settings moderator:manage:automod_settings moderator:read:automod_settings moderator:manage:automod moderator:manage:blocked_terms moderator:read:blocked_terms moderator:manage:banned_users moderation:read clips:edit channel:read:subscriptions channel:read:stream_key channel:read:redemptions channel:read:predictions channel:read:polls channel:read:hype_train channel:read:goals channel:read:editors channel:manage:videos channel:manage:schedule channel:manage:redemptions channel:manage:predictions channel:manage:polls channel:manage:extensions channel:manage:broadcast channel:edit:commercial bits:read analytics:read:games analytics:read:extensions"
+type TwitchRefresh struct {
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	ExpiresIn    int      `json:"expires_in"`
+	Scope        []string `json:"scope"`
+	TokenTyype   string   `json:"token_type"`
+}
 
-var AppToken TwitchRefresh
+type GetUserData struct {
+	Data []TwitchUserData `json:"data"`
+}
+
+type TwitchUserData struct {
+	ID              string    `json:"id"`
+	Login           string    `json:"login"`
+	DisplayName     string    `json:"display_name"`
+	Type            string    `json:"type"`
+	BroadcasterType string    `json:"broadcaster_type"`
+	Description     string    `json:"description"`
+	ProfileImageURL string    `json:"profile_image_url"`
+	OfflineImageURL string    `json:"offline_image_url"`
+	ViewCount       int       `json:"view_count"`
+	Email           string    `json:"email"`
+	CreatedAt       time.Time `json:"created_at"`
+}
 
 type UpdateRefreshTOken func(refreshToken, twitchID string) error
 
@@ -25,6 +47,11 @@ type HelixClientStruct struct {
 	ChatBot       *chatbot.ChatBot
 	eventChan     chan common.EventStruct
 }
+
+//TODO: Remove unneeded scope
+const Scope = "channel:moderate chat:edit chat:read whispers:read whispers:edit user:read:follows user:read:subscriptions user:read:email user:read:broadcast user:read:blocked_users user:manage:blocked_users user:edit:follows user:edit moderator:manage:chat_settings moderator:read:chat_settings moderator:manage:automod_settings moderator:read:automod_settings moderator:manage:automod moderator:manage:blocked_terms moderator:read:blocked_terms moderator:manage:banned_users moderation:read clips:edit channel:read:subscriptions channel:read:stream_key channel:read:redemptions channel:read:predictions channel:read:polls channel:read:hype_train channel:read:goals channel:read:editors channel:manage:videos channel:manage:schedule channel:manage:redemptions channel:manage:predictions channel:manage:polls channel:manage:extensions channel:manage:broadcast channel:edit:commercial bits:read analytics:read:games analytics:read:extensions"
+
+var AppToken TwitchRefresh
 
 func init() {
 	refreshAppToken()
@@ -39,7 +66,7 @@ func refreshAppToken() {
 	}
 	resp, err := http.PostForm("https://id.twitch.tv/oauth2/token", data)
 	if err != nil {
-		panic(err)
+		common.Loggers.Info.Fatalf("Error while refreshing app  token:\n%s\n", err)
 	}
 
 	json.NewDecoder(resp.Body).Decode(&AppToken)
@@ -61,7 +88,7 @@ func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, event
 
 	err := client.refreshToken()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = client.getUserData()
@@ -89,7 +116,7 @@ func (client *HelixClientStruct) refreshToken() error {
 
 	err = json.NewDecoder(resp.Body).Decode(&client.Refresh)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = client.updateRefresh(client.Refresh.RefreshToken, client.UserData.ID)
 	if client.ChatBot != nil {
@@ -123,9 +150,8 @@ func (client *HelixClientStruct) getUserData() error {
 
 	var temp GetUserData
 	err = json.NewDecoder(resp.Body).Decode(&temp)
-	fmt.Println(temp)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if len(temp.Data) == 0 {
 		return fmt.Errorf("No user data found")

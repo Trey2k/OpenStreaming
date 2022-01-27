@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/jackc/pgx/v4 v4.14.1
+	github.com/satori/go.uuid v1.2.0
 )
 
 require (

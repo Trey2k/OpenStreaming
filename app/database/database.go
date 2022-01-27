@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"os"
 
+	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -19,26 +20,37 @@ func init() {
 		os.Exit(1)
 	}
 
-	log.Println("Viewers table being reconstructed")
+	common.Loggers.Info.Printf("Viewers table being reconstructed\n")
 	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.viewers")
 	if err != nil {
-		panic(err)
+		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
 	}
 
 	err = createViewersTable()
 	if err != nil {
-		panic(err)
+		common.Loggers.Error.Fatalf("Error while creating viewers table:\n%s\n", err)
 	}
 
-	log.Println("Users table being reconstructed")
+	common.Loggers.Info.Printf("Users table being reconstructed\n")
 	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.users")
 	if err != nil {
-		panic(err)
+		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
 	}
 
 	err = createUsersTable()
 	if err != nil {
-		panic(err)
+		common.Loggers.Error.Fatalf("Error while creating users table:\n%s\n", err)
+	}
+
+	common.Loggers.Info.Printf("Overlays table being reconstructed\n")
+	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.overlays")
+	if err != nil {
+		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
+	}
+
+	err = createOverlaysTable()
+	if err != nil {
+		common.Loggers.Error.Fatalf("Error while creating overlays table:\n%s\n", err)
 	}
 
 }
@@ -57,4 +69,49 @@ func connectDB() (*pgxpool.Pool, error) {
 	}
 	return Pool, nil
 
+}
+
+func createUsersTable() error {
+	conn, err := connectDB()
+	if err != nil {
+		return err
+	}
+
+	sql, err := ioutil.ReadFile("/root/resources/sql/users.sql")
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Exec(context.Background(), string(sql))
+	return err
+}
+
+func createViewersTable() error {
+	conn, err := connectDB()
+	if err != nil {
+		return err
+	}
+
+	sql, err := ioutil.ReadFile("/root/resources/sql/viewers.sql")
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Exec(context.Background(), string(sql))
+	return err
+}
+
+func createOverlaysTable() error {
+	conn, err := connectDB()
+	if err != nil {
+		return err
+	}
+
+	sql, err := ioutil.ReadFile("/root/resources/sql/overlays.sql")
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Exec(context.Background(), string(sql))
+	return err
 }

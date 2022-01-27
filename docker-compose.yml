@@ -11,6 +11,8 @@ services:
       - TwitchClientID=${TwitchClientID}
       - TwitchClientSecret=${TwitchClientSecret}
       - URL=${URL}
+      - PrivateKey=${PrivateKey}
+      - FullChain=${FullChain}
     build: .
     ports:
       - 80:80

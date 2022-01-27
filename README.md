@@ -15,5 +15,3 @@ Setup:
 - copy example.env to .env and modify accordingly
 - run `docker-compose build && docker-compose up` to build and run the application
 
-# TODO
-- Replace all hardcoded URLS with os.Getenv("URL")

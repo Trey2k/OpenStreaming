@@ -27,19 +27,23 @@ main {
 
 .content {
     color: white;
+    margin: 5vh 10vh 5vh 10vh;
 }
 
-.nav-wrapper,
+.sidenav,
 .page-footer,
 nav {
     background-color: #4b4b4b;
+    color: white;
 }
 
-.nav-wrapper {
-    margin-left: 10vh;
-    
-    margin-right: 10vh;
+.sidenav li>a {
+    color: white;
 }
+
+.sidenav .button:hover {
+    background-color: teal;
+ }
 
 .button:hover {
     background-color: teal;
@@ -57,4 +61,19 @@ nav {
 
 .tealText {
     color: teal;
+}
+
+.displayBlock  { 
+    display: block !important; 
+}
+
+.backgroundIMG {
+    width: 100%;
+    height: 100%;
+    opacity: 0.75;
+    object-fit: fill;
+}
+
+.brand-logo {
+    font-size: 30px !important;
 }

@@ -6,7 +6,9 @@ import (
 	"os"
 
 	"github.com/Trey2k/OpenStreaming/app/api"
+	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/Trey2k/OpenStreaming/app/dashboard"
+	"github.com/Trey2k/OpenStreaming/app/overlay"
 	"github.com/gorilla/mux"
 )
 
@@ -14,18 +16,23 @@ func main() {
 	router := mux.NewRouter()
 
 	http.HandleFunc("/", httpInterceptor(router))
-	router.Handle("/", http.RedirectHandler("/dashboard", 200)).Methods("GET")
+	router.Handle("/", http.RedirectHandler("/dashboard", http.StatusFound)).Methods("GET")
 
-	// Main site
+	// Dashboard
 	router.HandleFunc("/dashboard", dashboard.AuthenticatedMW(dashboard.GetHomePage)).Methods("GET")
 	router.HandleFunc("/login", dashboard.GetLoginPage).Methods("GET")
-	router.HandleFunc("/overlay", dashboard.AuthenticatedMW(dashboard.OverlayHandler)).Methods("GET")
 	router.HandleFunc("/twitch", dashboard.TwitchOAuthEndpoint()).Methods("GET")
+
+	// Overlay
+	router.HandleFunc("/overlay", overlay.OverlayHandler).Methods("GET")
 
 	// Api endpoints
 	router.HandleFunc("/api/getEvents", api.GetEventHandler).Methods("GET")
 	router.HandleFunc("/api/toggleBot", api.ToggleBotHandler).Methods("GET")
-	router.HandleFunc("/ws", api.WebsocketHandler)
+	router.HandleFunc("/api/overlay/websocket", api.OverlayWSHandler)
+
+	// Favicon handler
+	router.HandleFunc("/favicon.ico", faviconHandler)
 
 	// Static file server
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("/root/resources/static")))
@@ -35,20 +42,21 @@ func main() {
 		Addr: ":443",
 	}
 
-	go http.ListenAndServe(":80", http.RedirectHandler("/dashboard", 200))
+	go http.ListenAndServe(":80", http.RedirectHandler(fmt.Sprintf("%s/dashboard", os.Getenv("URL")), http.StatusFound))
 
-	go api.Echo()
-
-	fmt.Println("Started TLS server in Cert Manager mode.\nDBHost: ", os.Getenv("DATABASE_HOST"))
-	err := server.ListenAndServeTLS("/root/resources/certs/fullchain1.pem", "/root/resources/certs/privkey1.pem")
+	common.Loggers.Info.Printf("Started TLS server\n")
+	err := server.ListenAndServeTLS(fmt.Sprintf("/root/%s", os.Getenv("FullChain")), fmt.Sprintf("/root/%s", os.Getenv("PrivateKey")))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Shutting down!")
 }
 
 func httpInterceptor(router http.Handler) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		router.ServeHTTP(rw, req)
 	}
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "/root/resources/OpenStreaming.ico")
 }

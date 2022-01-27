@@ -35,6 +35,7 @@ WORKDIR /root/
 COPY --from=builder /app/openStreaming . 
 COPY --from=builder /app/resources/ ./resources
 COPY --from=builder /app/.env .
+RUN mkdir ./logs
 
 
 # Expose port 8080 to the outside world

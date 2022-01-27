@@ -9,18 +9,20 @@ import (
 	"github.com/Trey2k/OpenStreaming/app/twitch/helix"
 )
 
-func GetLoginPage(rw http.ResponseWriter, req *http.Request) {
+func GetLoginPage(w http.ResponseWriter, r *http.Request) {
 
-	p := Page{
+	p := page{
 		Title: "OpenStreaming - Login",
 		StringOne: fmt.Sprintf("https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=%s",
 			os.Getenv("TwitchClientID"), fmt.Sprintf("%s/twitch", os.Getenv("URL")), helix.Scope),
 		LoggedIn: false,
 	}
 
-	err := common.Templates.LoginPage.ExecuteTemplate(rw, "base", p)
+	err := common.Templates.LoginPage.ExecuteTemplate(w, "base", p)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		common.Loggers.Error.Printf("Error while parsing template:\n%s\n", err)
+		return
 	}
 
 }

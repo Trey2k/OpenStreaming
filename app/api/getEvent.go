@@ -4,21 +4,27 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/Trey2k/OpenStreaming/app/dashboard"
 	"github.com/Trey2k/OpenStreaming/app/database"
 )
 
-func GetEventHandler(rw http.ResponseWriter, req *http.Request) {
-	isAuthenticate, id := dashboard.IsAuthenticated(rw, req)
+func GetEventHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticate, id := dashboard.IsAuthenticated(w, r)
 	if !isAuthenticate {
-		rw.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusForbidden)
+		common.Loggers.Info.Printf("Unauthenticated request to %s ip: %s\n", r.URL, common.GetIP(r))
 		return
 	}
 	usr := database.GetUser(id)
 	events := usr.GetEvents()
 
-	err := json.NewEncoder(rw).Encode(events)
+	err := json.NewEncoder(w).Encode(events)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		common.Loggers.Error.Printf("Error while encoding events:\n%s\n", err)
+		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }

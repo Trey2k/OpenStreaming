@@ -3,6 +3,7 @@ package dashboard
 import (
 	"net/http"
 
+	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/Trey2k/OpenStreaming/app/database"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
@@ -26,14 +27,11 @@ func init() {
 
 }
 
-func createSession(req *http.Request, rw http.ResponseWriter, id int) {
-	session, err := store.Get(req, "session-token")
+func createSession(w http.ResponseWriter, r *http.Request, id int) error {
+	session, _ := store.Get(r, "session-token")
 	session.Values["id"] = id
-	err = session.Save(req, rw)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	err := session.Save(r, w)
+	return err
 }
 
 func getSession(s *sessions.Session) (int, bool) {
@@ -45,8 +43,8 @@ func getSession(s *sessions.Session) (int, bool) {
 	return id, true
 }
 
-func IsAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, int) {
-	session, err := store.Get(req, "session-token")
+func IsAuthenticated(w http.ResponseWriter, r *http.Request) (bool, int) {
+	session, err := store.Get(r, "session-token")
 	if err == nil {
 		id, authenitcated := getSession(session)
 		if authenitcated {
@@ -58,18 +56,28 @@ func IsAuthenticated(rw http.ResponseWriter, req *http.Request) (bool, int) {
 }
 
 func TwitchOAuthEndpoint() http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		codes, ok := req.URL.Query()["code"]
-		if ok && len(codes) > 0 {
-			user, err := database.NewUser(codes[0])
-			if err != nil {
-				http.Redirect(rw, req, "login", 403)
-				return
-			}
-
-			createSession(req, rw, user.ID)
-
-			http.Redirect(rw, req, "/dashboard", 200)
+	return func(w http.ResponseWriter, r *http.Request) {
+		codes, ok := r.URL.Query()["code"]
+		if ok && len(codes) == 0 {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			common.Loggers.Info.Printf("No twitch token given during login. ip: %s\n", common.GetIP(r))
+			return
 		}
+
+		user, err := database.NewUser(codes[0])
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			common.Loggers.Info.Printf("Invalid twitch token given during login. ip: %s\n", common.GetIP(r))
+			return
+		}
+
+		err = createSession(w, r, user.ID)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			common.Loggers.Error.Printf("Error while creating session:\n%s\n", err)
+			return
+		}
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+
 	}
 }

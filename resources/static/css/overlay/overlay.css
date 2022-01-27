@@ -1,0 +1,10 @@
+.overlay {
+    position: absolute;
+    width: 1920;
+    height: 1080;
+    display: block;
+}
+
+#event {
+    position: absolute;
+}
