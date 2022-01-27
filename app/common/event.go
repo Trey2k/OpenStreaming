@@ -11,6 +11,7 @@ const (
 	InvalidEvent = EventType(iota)
 	TestEvent
 	TwitchMessageEvent
+	TwitchEventSub
 )
 
 type TwitchMessageEventStruct struct {

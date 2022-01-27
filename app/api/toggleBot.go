@@ -15,7 +15,7 @@ func ToggleBotHandler(w http.ResponseWriter, r *http.Request) {
 		common.Loggers.Info.Printf("Unauthenticated request to %s ip: %s\n", r.URL, common.GetIP(r))
 		return
 	}
-	usr := database.GetUser(id)
+	usr := database.GetUserByID(id)
 	w.WriteHeader(http.StatusOK)
 	if usr.HelixClient.ChatBot.Status {
 		usr.HelixClient.ChatBot.Stop()

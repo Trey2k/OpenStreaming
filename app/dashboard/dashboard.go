@@ -21,7 +21,7 @@ type page struct {
 
 //GetHomePage reutnrs the home page
 func GetHomePage(w http.ResponseWriter, r *http.Request, id int) {
-	usr := database.GetUser(id)
+	usr := database.GetUserByID(id)
 
 	p := page{
 		Title:             "OpenStreaming - Dashboard",

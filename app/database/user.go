@@ -12,26 +12,36 @@ type UserStruct struct {
 	TwitchID  string
 	DiscordID string
 
-	Events      []common.EventStruct
+	Events      []*common.EventStruct
 	HelixClient *helix.HelixClientStruct
 	Overlay     *OverlayStruct
-	eventChan   chan common.EventStruct
+	eventChan   chan *common.EventStruct
+
+	EventSubData *common.EventSubData
 }
 
 var (
-	users map[int]*UserStruct
+	usersID       map[int]*UserStruct
+	usersTwitchID map[string]*UserStruct
 )
 
 func init() {
-	users = make(map[int]*UserStruct)
+	usersID = make(map[int]*UserStruct)
+	usersTwitchID = make(map[string]*UserStruct)
 }
 
 func NewUser(refreshToken string) (*UserStruct, error) {
+	var err error
+
 	user := &UserStruct{}
 
-	var err error
-	user.eventChan = make(chan common.EventStruct)
+	user.eventChan = make(chan *common.EventStruct)
+
 	user.HelixClient, err = helix.NewHelixClient(refreshToken, UpdateRefreshToken, user.eventChan)
+	if err != nil {
+		return nil, err
+	}
+
 	err = user.FetchDB()
 	if err != nil {
 		err = user.CreateUser()
@@ -43,7 +53,9 @@ func NewUser(refreshToken string) (*UserStruct, error) {
 			return nil, err
 		}
 	}
-	users[user.ID] = user
+
+	usersID[user.ID] = user
+	usersTwitchID[user.TwitchID] = user
 
 	user.Overlay, err = GetOverlayByUserID(user.ID)
 	if err != nil {
@@ -67,8 +79,12 @@ func (user *UserStruct) ListenForEvents() {
 	}
 }
 
-func GetUser(id int) *UserStruct {
-	return users[id]
+func GetUserByID(id int) *UserStruct {
+	return usersID[id]
+}
+
+func GetUserByTwitchID(twitchID string) *UserStruct {
+	return usersTwitchID[twitchID]
 }
 
 func (user *UserStruct) FetchDB() error {
@@ -77,11 +93,11 @@ func (user *UserStruct) FetchDB() error {
 		return err
 	}
 
-	err = conn.QueryRow(context.Background(), `SELECT id, "twitchID", "discordID" FROM public.users WHERE "twitchID"=$1`, user.HelixClient.UserData.ID).Scan(&user.ID, &user.TwitchID, &user.DiscordID)
+	err = conn.QueryRow(context.Background(), `SELECT id, "twitchID", "discordID" FROM public.users WHERE "twitchID"=$1`, user.TwitchID).Scan(&user.ID, &user.TwitchID, &user.DiscordID)
 	return err
 }
 
-func (user *UserStruct) SendEvent(event common.EventStruct) error {
+func (user *UserStruct) SendEvent(event *common.EventStruct) error {
 	user.Events = append(user.Events, event)
 	if user.Overlay.Websocket != nil {
 		err := user.Overlay.Websocket.WriteJSON(event)
@@ -93,7 +109,7 @@ func (user *UserStruct) SendEvent(event common.EventStruct) error {
 	return nil
 }
 
-func (user *UserStruct) GetEvents() []common.EventStruct {
+func (user *UserStruct) GetEvents() []*common.EventStruct {
 	temp := user.Events
 	return temp
 }

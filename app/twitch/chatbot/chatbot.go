@@ -11,10 +11,10 @@ type ChatBot struct {
 	Status    bool
 	irc       *twitch.Client
 	username  string
-	eventChan chan common.EventStruct
+	eventChan chan *common.EventStruct
 }
 
-func NewChatBot(username string, token string, eventChan chan common.EventStruct) (*ChatBot, error) {
+func NewChatBot(username string, token string, eventChan chan *common.EventStruct) (*ChatBot, error) {
 
 	bot := &ChatBot{}
 
@@ -42,7 +42,7 @@ func (bot *ChatBot) onMessage(msg twitch.PrivateMessage) {
 			MessageContent: msg.Message,
 		},
 	}
-	bot.eventChan <- event
+	bot.eventChan <- &event
 }
 
 func (bot *ChatBot) Sayf(message string, args ...interface{}) {
