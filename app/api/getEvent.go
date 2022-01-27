@@ -16,7 +16,7 @@ func GetEventHandler(w http.ResponseWriter, r *http.Request) {
 		common.Loggers.Info.Printf("Unauthenticated request to %s ip: %s\n", r.URL, common.GetIP(r))
 		return
 	}
-	usr := database.GetUser(id)
+	usr := database.GetUserByID(id)
 	events := usr.GetEvents()
 
 	err := json.NewEncoder(w).Encode(events)

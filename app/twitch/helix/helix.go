@@ -78,7 +78,7 @@ func refreshAppToken() {
 	}()
 }
 
-func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, eventChan chan common.EventStruct) (*HelixClientStruct, error) {
+func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, eventChan chan *common.EventStruct) (*HelixClientStruct, error) {
 	client := &HelixClientStruct{
 		Refresh: TwitchRefresh{
 			RefreshToken: RefreshToken,
@@ -137,6 +137,19 @@ func (client *HelixClientStruct) doUserRequest(request *http.Request) (*http.Res
 	}
 
 	err = client.refreshToken()
+	return resp, err
+}
+
+func DoAppRequest(request *http.Request) (*http.Response, error) {
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", AppToken.AccessToken))
+	request.Header.Add("Client-Id", os.Getenv("TwitchClientID"))
+	webClient := &http.Client{}
+
+	resp, err := webClient.Do(request)
+	if err != nil {
+		return resp, err
+	}
+
 	return resp, err
 }
 

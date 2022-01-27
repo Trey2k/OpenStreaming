@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/Trey2k/OpenStreaming/app/twitch/eventSub"
 	"net/http"
 	"os"
 
@@ -60,9 +61,11 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := database.GetUser(overlay.ID)
+	user := database.GetUserByID(overlay.ID)
 	user.Overlay.Websocket = ws
 	clients[ws] = user
+
+	eventSub.SubscribeTwitchEvents(user)
 
 	ws.SetCloseHandler(func(code int, text string) error {
 		clients[ws] = nil

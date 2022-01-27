@@ -9,6 +9,7 @@ import (
 	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/Trey2k/OpenStreaming/app/dashboard"
 	"github.com/Trey2k/OpenStreaming/app/overlay"
+	"github.com/Trey2k/OpenStreaming/app/twitch/eventSub"
 	"github.com/gorilla/mux"
 )
 
@@ -37,6 +38,9 @@ func main() {
 	// Static file server
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("/root/resources/static")))
 	http.Handle("/static/", fileServer)
+
+	// Callback
+	router.HandleFunc("/eventsub", eventSub.EventSubHandler()).Methods("POST")
 
 	server := &http.Server{
 		Addr: ":443",

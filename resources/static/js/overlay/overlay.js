@@ -15,6 +15,7 @@ $(function()
   };
  
   webSocket.onmessage = function (event) {
+    console.log(event.data);
     var e = JSON.parse(event.data);
     switch(e.Type) {
       case 2:
