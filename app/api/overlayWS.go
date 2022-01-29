@@ -1,20 +1,31 @@
 package api
 
 import (
-	"github.com/Trey2k/OpenStreaming/app/twitch/eventSub"
+	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/Trey2k/OpenStreaming/app/twitch/eventSub"
 
 	"github.com/Trey2k/OpenStreaming/app/common"
 	"github.com/Trey2k/OpenStreaming/app/database"
 	"github.com/gorilla/websocket"
 )
 
-type MessageType int
+type MessageType string
+
+type MessageStruct struct {
+	Type    MessageType
+	Index   int
+	Overlay *database.OverlayStruct
+	Modeule *database.OverlayModule
+}
 
 const (
-	InvalidMessage = MessageType(iota)
-	StringMessage
+	InvalidMessage = ""
+	GetOverlay     = "getOverlay"
+	Return         = "return"
+	UpdateModeul   = "updateModule"
 )
 
 var clients = make(map[*websocket.Conn]*database.UserStruct)
@@ -54,6 +65,7 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(key)
 	overlay, err := database.GetOverlayByKey(key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -62,6 +74,7 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := database.GetUserByID(overlay.ID)
+	overlay = user.Overlay
 	user.Overlay.Websocket = ws
 	clients[ws] = user
 
@@ -77,16 +90,24 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 	common.Loggers.Info.Printf("Opened WS Connection with %d\n", user.ID)
 
 	for {
-		msgType, msg, err := ws.ReadMessage()
-		if err == websocket.ErrBadHandshake || err == websocket.ErrReadLimit {
-			ws.Close()
-			common.Loggers.Error.Printf("Error while reading websocker with user %d:\n%s\n", user.ID, err)
-			break
-		} else if err != nil {
+		msg := &MessageStruct{}
+		err := ws.ReadJSON(msg)
+		if err != nil {
 			break
 		}
 
-		common.Loggers.Info.Printf("websocket message from %d: %d, %s\n", user.ID, msgType, msg)
+		switch msg.Type {
+		case GetOverlay:
+			toSend := &MessageStruct{
+				Type:    Return,
+				Overlay: overlay,
+			}
+			err = ws.WriteJSON(toSend)
+			if err != nil {
+				common.Loggers.Error.Printf("Error while writing overlay to websocket:\n%s\n", err)
+			}
+		}
+
 	}
 
 }

@@ -1,12 +1,32 @@
+var token = "";
+var editorMode = false;
+
+function setToken(t){
+  token = t
+}
+
+function initOverlay(overlay) {
+  var modules = [];
+  for(var i = 0; i < overlay.Modules.length; i++) {
+    modules.push(newModule(overlay.Modules[i]));
+  }
+
+  return modules;
+}
+
 $(function()
 {
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
   const domain = window.location.host;
-  var webSocket = new WebSocket("wss://"+domain+"/api/overlay/websocket?token="+id);
+  var webSocket = new WebSocket("wss://"+domain+"/api/overlay/websocket?token="+token);
+  var ovarlay = null;
+  var modules = [];
     
   webSocket.onopen = function (event) {
-    webSocket.send("Hello World!");
+    console.log("WebSocket opened");
+    webSocket.send(JSON.stringify({
+      "Type": "getOverlay",
+      "Overlay": null
+    }));
   }
 
   window.onbeforeunload = function() {
@@ -18,12 +38,19 @@ $(function()
     console.log(event.data);
     var e = JSON.parse(event.data);
     switch(e.Type) {
-      case 2:
-        $("#event").css({top: (1080/2)-500, left: (1920/2)-500});
-        $("#event").append("<img src=\"/static/imgs/noOOP.png\" style=\"width: 500px; height: 500px;\">");
-        $("#event").append("<p style=\"font-size: 50px;\">"+e.Data.MessageContent+"</p>");
+      case "Return":
+        ovarlay = e.Overlay
+        modules = initOverlay(ovarlay);
+      default:
+        for (let i = 0; i < modules.length; i++) {
+          modules[i].sendEvent(e);
+        }
     }
   }   
+
+  if (editorMode) {
+    initEditor(modules);
+  }
 
 });
 

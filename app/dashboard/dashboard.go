@@ -28,7 +28,7 @@ func GetHomePage(w http.ResponseWriter, r *http.Request, id int) {
 		DisplayName:       usr.HelixClient.UserData.DisplayName,
 		ProfilePicture:    usr.HelixClient.UserData.ProfileImageURL,
 		BackgroundPicture: usr.HelixClient.UserData.OfflineImageURL,
-		OverlayURL:        fmt.Sprintf("%s/overlay?id=%s", os.Getenv("URL"), usr.Overlay.Key),
+		OverlayURL:        fmt.Sprintf("%s/overlay/%s/editor", os.Getenv("URL"), usr.Overlay.Key),
 		LoggedIn:          true,
 	}
 

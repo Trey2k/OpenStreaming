@@ -22,7 +22,7 @@
 
         <nav>
           <div class="nav-wrapper">
-          <a data-target="slide-out" class="brand-logo center">Open<span class="tealText">Streaming</span></i></a>
+          <a class="brand-logo center">Open<span class="tealText">Streaming</span></a>
           <ul id="nav-mobile" class="left">
           {{ if .LoggedIn }}
             <li><a data-target="slide-out" class="sidenav-trigger displayBlock button"><i class="fas fa-bars"></i></a></li>
@@ -43,7 +43,7 @@
           </div></li>
           <li><a class="button" id="mainButton"><i class="fas fa-home"></i> Home</a></li>
           <li><a class="button" id="chatBotButton"><i class="fas fa-robot"></i> ChatBot</a></li>
-          <li><a class="button" id="overlayButton" href="{{ .OverlayURL }}" target="_blank">Overlay</a></li>
+          <li><a class="button" id="overlayButton" href="{{ .OverlayURL }}"><i class="fas fa-magic"></i> Overlay Editor</a></li>
         {{ end }}
         </ul>
         

@@ -11,7 +11,7 @@ const (
 	InvalidEvent = EventType(iota)
 	TestEvent
 	TwitchMessageEvent
-	TwitchEventSub
+	TwitchFollow
 )
 
 type TwitchMessageEventStruct struct {
@@ -19,4 +19,9 @@ type TwitchMessageEventStruct struct {
 	UserDisplay    string
 	UserID         string
 	MessageContent string
+}
+
+type TwitchFollowEventStruct struct {
+	DisplayName    string
+	ProfilePicture string
 }

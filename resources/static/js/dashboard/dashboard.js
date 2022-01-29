@@ -16,7 +16,16 @@ $(document).ready(function(){
 
     var apiClient = new APIClient;
     var botOn = false;
-    showMain();
+    switch (window.location.hash) {
+        case "#chatBot":
+            showChatBot();
+            break;
+        case "#main":
+        default:    
+            showMain();
+            break
+    }
+    
     $('.sidenav').sidenav();
     $('.tabs').tabs();
 

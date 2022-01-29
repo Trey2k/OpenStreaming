@@ -28,6 +28,7 @@ var (
 func init() {
 	usersID = make(map[int]*UserStruct)
 	usersTwitchID = make(map[string]*UserStruct)
+
 }
 
 func NewUser(refreshToken string) (*UserStruct, error) {
@@ -71,11 +72,8 @@ func NewUser(refreshToken string) (*UserStruct, error) {
 }
 
 func (user *UserStruct) ListenForEvents() {
-	for {
-		select {
-		case event := <-user.eventChan:
-			user.SendEvent(event)
-		}
+	for event := range user.eventChan {
+		user.SendEvent(event)
 	}
 }
 
@@ -92,6 +90,7 @@ func (user *UserStruct) FetchDB() error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	err = conn.QueryRow(context.Background(), `SELECT id, "twitchID", "discordID" FROM public.users WHERE "twitchID"=$1`, user.TwitchID).Scan(&user.ID, &user.TwitchID, &user.DiscordID)
 	return err
@@ -119,6 +118,7 @@ func UpdateRefreshToken(token, twitchID string) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	_, err = conn.Exec(context.Background(), `UPDATE public.users SET "refreshToken"=$1 WHERE "twitchID"=$2;`, token, twitchID)
 	return err
@@ -129,6 +129,7 @@ func (user *UserStruct) CreateUser() error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	_, err = conn.Exec(context.Background(), `INSERT INTO public.users("twitchID", "refreshToken") VALUES ($1, $2) `, user.HelixClient.UserData.ID, user.HelixClient.Refresh.RefreshToken)
 	user.TwitchID = user.HelixClient.UserData.ID

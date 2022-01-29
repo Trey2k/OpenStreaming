@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+	fmt.Println("test")
 	router := mux.NewRouter()
 
 	http.HandleFunc("/", httpInterceptor(router))
@@ -25,11 +26,15 @@ func main() {
 	router.HandleFunc("/twitch", dashboard.TwitchOAuthEndpoint()).Methods("GET")
 
 	// Overlay
-	router.HandleFunc("/overlay", overlay.OverlayHandler).Methods("GET")
+	router.HandleFunc("/overlay/{id}", overlay.OverlayHandler).Methods("GET")
+	// Overlay
+	router.HandleFunc("/overlay/{id}/editor", dashboard.AuthenticatedMW(overlay.OverlayEditorHandler)).Methods("GET")
 
 	// Api endpoints
 	router.HandleFunc("/api/getEvents", api.GetEventHandler).Methods("GET")
 	router.HandleFunc("/api/toggleBot", api.ToggleBotHandler).Methods("GET")
+
+	// Overlay Api endpoints
 	router.HandleFunc("/api/overlay/websocket", api.OverlayWSHandler)
 
 	// Favicon handler

@@ -20,7 +20,7 @@ type TwitchRefresh struct {
 	TokenTyype   string   `json:"token_type"`
 }
 
-type GetUserData struct {
+type GetUserDataStruct struct {
 	Data []TwitchUserData `json:"data"`
 }
 
@@ -69,13 +69,10 @@ func refreshAppToken() {
 		common.Loggers.Info.Fatalf("Error while refreshing app  token:\n%s\n", err)
 	}
 
-	json.NewDecoder(resp.Body).Decode(&AppToken)
-
-	timer := time.NewTimer(time.Duration(AppToken.ExpiresIn))
-	go func() {
-		<-timer.C
-		refreshAppToken()
-	}()
+	err = json.NewDecoder(resp.Body).Decode(&AppToken)
+	if err != nil {
+		common.Loggers.Info.Fatalf("Error while decoding app token:\n%s\n", err)
+	}
 }
 
 func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, eventChan chan *common.EventStruct) (*HelixClientStruct, error) {
@@ -98,7 +95,7 @@ func NewHelixClient(RefreshToken string, updateRefresh UpdateRefreshTOken, event
 
 	client.ChatBot, err = chatbot.NewChatBot(client.UserData.Login, client.Refresh.AccessToken, eventChan)
 
-	return client, nil
+	return client, err
 }
 
 func (client *HelixClientStruct) refreshToken() error {
@@ -149,8 +146,32 @@ func DoAppRequest(request *http.Request) (*http.Response, error) {
 	if err != nil {
 		return resp, err
 	}
-
+	refreshAppToken()
 	return resp, err
+}
+
+func GetUserData(id string) (*TwitchUserData, error) {
+	request, err := http.NewRequest("GET",
+		fmt.Sprintf("https://api.twitch.tv/helix/users?id=%s", id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := DoAppRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	temp := &GetUserDataStruct{}
+
+	err = json.NewDecoder(resp.Body).Decode(temp)
+	if err != nil {
+		return nil, err
+	}
+	if len(temp.Data) == 0 {
+		return nil, fmt.Errorf("no user data found")
+	}
+	return &temp.Data[0], err
 }
 
 func (client *HelixClientStruct) getUserData() error {
@@ -160,14 +181,17 @@ func (client *HelixClientStruct) getUserData() error {
 	}
 
 	resp, err := client.doUserRequest(request)
+	if err != nil {
+		return err
+	}
 
-	var temp GetUserData
+	var temp GetUserDataStruct
 	err = json.NewDecoder(resp.Body).Decode(&temp)
 	if err != nil {
 		return err
 	}
 	if len(temp.Data) == 0 {
-		return fmt.Errorf("No user data found")
+		return fmt.Errorf("no user data found")
 	}
 	client.UserData = temp.Data[0]
 	return err

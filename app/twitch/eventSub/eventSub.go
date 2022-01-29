@@ -25,18 +25,30 @@ func EventSubHandler() http.HandlerFunc {
 			json.NewDecoder(req.Body).Decode(event)
 
 			var user = database.GetUserByTwitchID(event.Event.BroadcasterUserID)
-
-			err := user.FetchDB()
+			viewer, err := helix.GetUserData(event.Event.UserID)
 			if err != nil {
 				panic(err)
 			}
 
-			data := &common.EventStruct{
-				Type: common.TwitchEventSub,
-				Data: event,
+			err = user.FetchDB()
+			if err != nil {
+				panic(err)
 			}
 
-			user.SendEvent(data)
+			d := &common.TwitchFollowEventStruct{
+				DisplayName:    event.Event.UserName,
+				ProfilePicture: viewer.ProfileImageURL,
+			}
+
+			data := &common.EventStruct{
+				Type: common.TwitchFollow,
+				Data: d,
+			}
+
+			err = user.SendEvent(data)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
