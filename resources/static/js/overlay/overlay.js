@@ -1,24 +1,22 @@
 var token = "";
-var editorMode = false;
-
 function setToken(t){
   token = t
 }
 
-function initOverlay(overlay) {
-  var modules = [];
-  for(var i = 0; i < overlay.Modules.length; i++) {
-    modules.push(newModule(overlay.Modules[i]));
+function initOverlay(overlay, webSocket) {
+  overlay.Mods = [];
+  console.log("Modules", overlay.Modules);
+  for(const i in overlay.Modules) {
+    console.log("Module", overlay.Modules[i]);
+    overlay.Mods.push(newModule(overlay.Modules[i]));
   }
-
-  return modules;
 }
 
 $(function()
 {
   const domain = window.location.host;
   var webSocket = new WebSocket("wss://"+domain+"/api/overlay/websocket?token="+token);
-  var ovarlay = null;
+  var overlay = null;
   var modules = [];
     
   webSocket.onopen = function (event) {
@@ -35,12 +33,16 @@ $(function()
   };
  
   webSocket.onmessage = function (event) {
-    console.log(event.data);
     var e = JSON.parse(event.data);
     switch(e.Type) {
-      case "Return":
-        ovarlay = e.Overlay
-        modules = initOverlay(ovarlay);
+      case "return":
+        overlay = e.Overlay
+        initOverlay(overlay, webSocket);
+        if (editorMode) {
+          console.log("Editor mode enabled");
+          initEditor(overlay, webSocket);
+        }
+        break;
       default:
         for (let i = 0; i < modules.length; i++) {
           modules[i].sendEvent(e);
@@ -48,9 +50,7 @@ $(function()
     }
   }   
 
-  if (editorMode) {
-    initEditor(modules);
-  }
+  
 
 });
 

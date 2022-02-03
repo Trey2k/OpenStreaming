@@ -1,0 +1,3 @@
+[submodule "overlayWASM"]
+	path = overlayWASM
+	url = https://github.com/Trey2k/OverlayWASM

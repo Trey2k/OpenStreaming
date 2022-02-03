@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "webApp"
+		},
+		{
+			"path": "overlayWASM"
+		},
+		{
+			"path": "."
+		}
+	]
+}

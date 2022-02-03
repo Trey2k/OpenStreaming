@@ -1,43 +1,104 @@
 function newModule(moduleInfo) {
     switch(moduleInfo.Type) {
         case 1:
-            return new AlertBox(moduleInfo.Top, moduleInfo.Left, moduleInfo.Width, moduleInfo.Height);
+            return new AlertBox(moduleInfo.Top, moduleInfo.Left, moduleInfo.Width, moduleInfo.Height, false);
     }
 }
 
 function newAlertBox() {
-    return new AlertBox((1080/2)-250, (1920/2)-250, 500, 500);
+    return new AlertBox((1080/2)-250, (1920/2)-250, 500, 500, true);
 }
 
 class Module {
-    constructor(top, left, width, height) {
-        this.top = top;
-        this.left = left;
-        this.width = width;
+    Top = 0;
+    Left = 0;
+    Width = 0;
+    Height = 0
+    Events = [];
+    Busy = false;
+    EventHandler= null;
+
+    constructor(top, left, width, height, isNew) {
+        this.Top = top;
+        this.Left = left;
+        this.Width = width;
         this.Height = height;
+        this.Events = [];
+        this.Busy = false;
+        this.IsNew = isNew;
+        this.EventHandler = setInterval(this.eventHandler.bind(this), 1);
+    }
+
+    getTop() {
+        return this.Top;
+    }
+
+    getLeft() {
+        return this.Left;
+    }
+
+    getWidth() {
+        return this.Width;
+    }
+
+    getHeight() {
+        return this.Height;
+    }
+
+    getNew() {
+        return this.IsNew;
+    }
+
+    update() {
+
     }
 
     sendEvent(event) {
-
+        console.log("Event: " + event.Type);
+        this.Events.push(event);
     }
+
+    eventHandler() {
+        if (this.Events.length > 0 &&  this.Busy == false) {
+            let event = this.Events.pop();
+            switch (event.Type) {
+                case 3:
+                    this.followEvent(event);
+            }
+        }
+    }
+
+    destroy() {
+        clearInterval(this.EventHandler);
+    }
+
+    getType() {
+        return 0;
+    }
+
+    followEvent(event) {
+    }
+
 }
 
 var index = 0;
 
 class AlertBox extends Module {
-    constructor(top, left, width, height) {
-        super(top, left, width, height);
+    id = "";
+    module = null;
+    alertBox = null;
+    constructor(top, left, width, height, isNew) {
+        super(top, left, width, height, isNew);
         this.id = index.toString();
         index++;
-        $(".modules").append('<div class="alertBox module" id='+this.id+'></div>');
-        var alertBox = $(".alertBox#"+this.id);
-        alertBox.css("top", top);
-        alertBox.css("left", left);
-        alertBox.css("width", width);
-        alertBox.css("height", height);
+        $(".modules").append('<div class="module" id='+this.id+'><div class="alertBox" id='+this.id+'></div></div>')
+        this.module = $(".module#"+this.id);
+        this.alertBox = this.module.children(".alertBox");
+        this.module.css("top", top).css("left", left).css("width", width).css("height", height);
+        
         if (editorMode) {
-            alertBox.append(editorElements(this.id, "Alert Box"));
-            alertBox.resizable({
+            this.module.prepend(editorElements(this.id, "Alert Box"));
+            this.module.resizable({
                 containment: ".overlay",
                 scroll: false,
                 handles: {
@@ -52,18 +113,41 @@ class AlertBox extends Module {
                 }
             });
             
-            alertBox.draggable({containment: ".overlay"});
+            this.module.draggable({containment: ".overlay"});
         }
     }
 
-    sendEvent(event) {
-        switch (event.Type) {
-            case 3:
-                var alertBox = $(".alertBox#"+this.id);
-                alertBox.append("<img src='"+event.Data.ProfilePicture+"' class=`viewerPFP`>");
-                alertBox.append("<span class=`viewerName`>"+event.Data.DisplayName+"</span>");
-        }
+    update() {
+        this.Top = this.module.position().top;
+        this.Left = this.module.position().left;
+        this.Width = this.module.width();
+        this.Height = this.module.height();
     }
+
+
+    destroy() {
+        super.destroy();
+        this.module.remove();
+    }
+
+    getType() {
+        return 1;
+    }
+
+    followEvent(event) {
+        this.Busy = true;
+            
+        this.alertBox.append("<img src='"+event.Data.ProfilePicture+"' class='viewerPFP alertInfo'>");
+        this.alertBox.append("<span class='viewerName alertInfo'>Thanks for following "+event.Data.DisplayName+"!</span>");
+        setTimeout(this.clear.bind(this), 15 * 1000);
+    }
+
+    clear() {
+        
+        this.alertBox.empty();
+        this.Busy = false;
+    }
+
 }
 
 function editorElements(id, title) {

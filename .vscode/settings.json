@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+      "**/overlayWASM": true,
+      "**/webApp": true,
+  },
+  "go.toolsEnvVars": {
+    "GOOS": "js",
+    "GOARCH": "wasm"
+  }
+}

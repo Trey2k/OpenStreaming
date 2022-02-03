@@ -1,0 +1,2 @@
+# When you rebuild the same image a lot docker will fill up its storage fast. Running this should resolve any issues with this. (normally database related first)
+docker rmi $(docker images | grep "^<none>" | awk '{print $3}')

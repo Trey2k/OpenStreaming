@@ -1,57 +1,59 @@
-body {
-    overflow: hidden;
-    max-width: 1920px;
-    max-height: 1080px;
-}
-
-#fullScreen {
-    position: absolute;
-    right: 25px;
-    top: 20px;
-}
-
 #menuButton {
     position: absolute;
     top: 20px;
     left: 25px;
 }
 
-#save {
+#contextMenu{
+    position: relative;
+}
+
+#addMenu {
     position: absolute;
-    bottom: 20px;
-    left: 25px;
+    width: 150px !important;
+    left: 150px !important;
+}
+
+.dropdown-content {
+	min-width: 0;
+	min-height: 0;
+    overflow: visible !important;
+
+}
+
+.context-trigger {
+    position: absolute;
+    width: 150px;
 }
 
 .overlay {
-    width: 1920px;
-    height: 1080px;
-    background-image: url("/static/imgs/paper.jpg");
-    object-fit: fill;
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, grey 1px, transparent 1px),
+    linear-gradient(to bottom, grey 1px, transparent 1px);
+
 }
 
 .module {
     cursor: move;
-    border: 1px dashed #3b3b3b;
-    position: absolute;
+    border: 3px solid #8b8b8b;
 }
 
 .moduleTitle {
-    vertical-align: top;
-    bottom: 101%;
+    top: -40px;
     font-size: 25px;
-    position: absolute;
+    position: relative;
 }
 
 .ui-resizable-handle {
     width: 10px;
     height: 10px;
-    background-color: #ffffff;
-    border: 1px solid #000000;
+    border-radius: 50%;
+    background-color: #0f9386;
     position: absolute;
 }
 .ui-resizable-nw {
-    left: -5px;
-    top: -5px;
+    left: -7px;
+    top: -7px;
     cursor: nw-resize;
 }
 .ui-resizable-ne {
@@ -60,32 +62,32 @@ body {
     cursor: ne-resize;
 }
 .ui-resizable-sw {
-    bottom: -5px;
-    left: -5px;
+    bottom: -7px;
+    left: -7px;
     cursor: sw-resize;
 }
 .ui-resizable-se {
-    bottom: -5px;
-    right:-5px;
+    bottom: -7px;
+    right:-7px;
     cursor: se-resize;
 }
 .ui-resizable-n {
-    top: -5px;
+    top: -7px;
     left:50%;
     cursor: n-resize;
 }
 .ui-resizable-s {
-    bottom: -5px;
+    bottom:-7px;
     left: 50%;
     cursor: s-resize;
 }
 .ui-resizable-w {
-    left:-5px;
+    left:-7px;
     top:calc(50% - 5px);
     cursor: w-resize;
 }
 .ui-resizable-e {
-    right:-5px;
+    right: -7px;
     top:calc(50% - 5px);
     cursor: e-resize;
 }

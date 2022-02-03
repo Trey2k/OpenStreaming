@@ -13,6 +13,8 @@ services:
       - URL=${URL}
       - PrivateKey=${PrivateKey}
       - FullChain=${FullChain}
+      - Port=${Port}
+      - PortSSL=${PortSSL}
     build: .
     ports:
       - 80:80
