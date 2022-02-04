@@ -9,12 +9,13 @@
         <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
         <script type="text/javascript" src="/static/js/materialize.min.js"></script>
         <script type="text/javascript" src="/static/js/fontawesome.min.js"></script>
-        <script type="text/javascript" src="/static/js/overlay/overlay.js"></script>
-        <script type="text/javascript" src="/static/js/overlay/modules.js"></script>
-        
         <script type="text/javascript">
-        setToken("{{ .Token }}");
+          const Token = '{{.Token}}';
+          const EditorMode = false;
         </script>
+        <script type="text/javascript" src="/static/js/overlay/wasm_exec.js"></script>
+        <script type="text/javascript" src="/static/js/overlay/overlay.js"></script>
+        
 
         <link href="/static/css/fontawesome.min.css" rel="stylesheet">
         <link href="/static/css/materialize.min.css" rel="stylesheet">
@@ -24,6 +25,19 @@
         <title>{{ .Title }}</title>
     </head>
     <body id="min">
+        <div id="loadingScreen"></div>
+        <div class="preloader-wrapper active" id="loadingIndicator">
+          <div class="spinner-layer spinner-teal-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="content">
             {{ template "overlayContent" . }}
         </div>
@@ -43,15 +57,12 @@
         <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
         <script type="text/javascript" src="/static/js/materialize.min.js"></script>
         <script type="text/javascript" src="/static/js/fontawesome.min.js"></script>
-        <script type="text/javascript" src="/static/js/overlay/editor.js"></script>
-        <script type="text/javascript" src="/static/js/overlay/overlay.js"></script>
-        <script type="text/javascript" src="/static/js/overlay/modules.js"></script>
-
-        
-
         <script type="text/javascript">
-        setToken("{{ .Token }}");
+            const Token = '{{.Token}}';
+            const EditorMode = true;
         </script>
+        <script type="text/javascript" src="/static/js/overlay/wasm_exec.js"></script>
+        <script type="text/javascript" src="/static/js/overlay/overlay.js"></script>
 
         <link href="/static/css/fontawesome.min.css" rel="stylesheet">
         <link href="/static/css/materialize.min.css" rel="stylesheet">
@@ -77,6 +88,19 @@
           <li><a class="button" id="chatBotButton" href="/dashboard#chatBot"><i class="fas fa-robot"></i> ChatBot</a></li>
           <li><a class="button active" id="overlayButton" href="#"><i class="fas fa-magic"></i> Overlay Editor</a></li>
         </ul>
+
+        <div id="loadingScreen"></div>
+        <div class="preloader-wrapper active" id="loadingIndicator">
+          <div class="spinner-layer spinner-teal-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
 
         <div class="content">
             {{ template "editorContent" . }}

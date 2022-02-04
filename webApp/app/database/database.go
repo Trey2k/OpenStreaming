@@ -62,8 +62,6 @@ func init() {
 		common.Loggers.Error.Fatalf("Error while creating overlayModules table:\n%s\n", err)
 	}
 
-	fmt.Println("test4")
-
 }
 
 func connectDB() (*pgxpool.Pool, error) {

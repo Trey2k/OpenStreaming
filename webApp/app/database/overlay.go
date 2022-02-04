@@ -12,7 +12,7 @@ type OverlayStruct struct {
 	UserID     int
 	Key        string
 	ModuleInfo map[int]*OverlayModule
-	Websocket  *websocket.Conn
+	Websockets map[int]*websocket.Conn
 }
 
 func GetOverlayByUserID(userID int) (*OverlayStruct, error) {
@@ -61,8 +61,9 @@ func createOverlay(user *UserStruct) error {
 	key := uuid.NewV4().String()
 
 	user.Overlay = &OverlayStruct{
-		UserID: user.ID,
-		Key:    key,
+		UserID:     user.ID,
+		Key:        key,
+		Websockets: make(map[int]*websocket.Conn),
 	}
 
 	err = conn.QueryRow(context.Background(), `INSERT INTO public.overlays("userID", "key") VALUES ($1, $2) RETURNING "id";`, user.ID, key).Scan(&user.Overlay.ID)

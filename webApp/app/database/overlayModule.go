@@ -43,26 +43,18 @@ func (overlay *OverlayStruct) GetModules() error {
 		if err != nil {
 			return err
 		}
-		overlay.ModuleInfo[overlay.ID] = module
+		overlay.ModuleInfo[module.ID] = module
 	}
 
 	return nil
 }
 
-func (overlay *OverlayStruct) NewModule(Type OverlayModuleType, top, left, width, height int) (int, error) {
+func (overlay *OverlayStruct) NewModule(module *OverlayModule) (int, error) {
 	conn, err := connectDB()
 	if err != nil {
 		return 0, err
 	}
 	defer conn.Close()
-
-	module := &OverlayModule{
-		Type:   Type,
-		Top:    top,
-		Left:   left,
-		Width:  width,
-		Height: height,
-	}
 
 	err = conn.QueryRow(context.Background(),
 		`INSERT INTO public."overlayModules"("overlayID", "type", "top", "left", "width", "height") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id";`,
@@ -76,7 +68,7 @@ func (overlay *OverlayStruct) NewModule(Type OverlayModuleType, top, left, width
 		overlay.ModuleInfo = make(map[int]*OverlayModule)
 	}
 
-	overlay.ModuleInfo[overlay.ID] = module
+	overlay.ModuleInfo[module.ID] = module
 	return module.ID, nil
 }
 
@@ -108,17 +100,17 @@ func (module *OverlayModule) Delete() error {
 	return nil
 }
 
-func (module *OverlayModule) Update(top, left, width, height int) error {
+func (module *OverlayModule) Update(moduleInfo *OverlayModule) error {
 	conn, err := connectDB()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	module.Top = top
-	module.Left = left
-	module.Width = width
-	module.Height = height
+	module.Top = moduleInfo.Top
+	module.Left = moduleInfo.Left
+	module.Width = moduleInfo.Width
+	module.Height = moduleInfo.Height
 
 	_, err = conn.Exec(context.Background(), `UPDATE public."overlayModules" SET "top"=$1, "left"=$2, "width"=$3, "height"=$4 WHERE "id"=$5`,
 		module.Top, module.Left, module.Width, module.Height, module.ID)

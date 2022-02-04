@@ -10,12 +10,10 @@ import (
 	"github.com/Trey2k/OpenStreaming/webApp/app/dashboard"
 	"github.com/Trey2k/OpenStreaming/webApp/app/overlay"
 	"github.com/Trey2k/OpenStreaming/webApp/app/twitch/eventSub"
-	"github.com/Trey2k/OpenStreaming/webApp/app/wasm"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	fmt.Println("test")
 	router := mux.NewRouter()
 
 	http.HandleFunc("/", httpInterceptor(router))
@@ -30,11 +28,6 @@ func main() {
 	router.HandleFunc("/overlay/{id}", overlay.OverlayHandler).Methods("GET")
 	// Overlay
 	router.HandleFunc("/overlay/{id}/editor", dashboard.AuthenticatedMW(overlay.OverlayEditorHandler)).Methods("GET")
-
-	// Overlay
-	router.HandleFunc("/wasm/{id}", wasm.OverlayHandler).Methods("GET")
-	// Overlay
-	router.HandleFunc("/wasm/{id}/editor", dashboard.AuthenticatedMW(wasm.OverlayEditorHandler)).Methods("GET")
 
 	// Api endpoints
 	router.HandleFunc("/api/getEvents", api.GetEventHandler).Methods("GET")

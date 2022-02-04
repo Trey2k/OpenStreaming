@@ -12,7 +12,7 @@
         
         
 
-        <div class="fixed-action-btn">
+        <div class="fixed-action-btn" id="actions" style="display: none;">
                 <a class="btn-floating btn-large waves-effect waves-light red" id="quickAction"><i class="material-icons">flash_on</i></a>
             <ul>
             <li><a class="btn-floating btn-large waves-effect waves-light green" id="save"><i class="material-icons">save</i></a></li>

@@ -17,12 +17,14 @@ type MessageType int
 type MessageStruct struct {
 	Type    MessageType
 	Overlay *database.OverlayStruct
+	wsID    int
 }
 
 const (
 	InvalidMessage = MessageType(iota)
 	GetOverlay
-	Return
+	OverlayInfo
+	SaveOverlay
 )
 
 var clients = make(map[*websocket.Conn]*database.UserStruct)
@@ -40,19 +42,61 @@ func init() {
 	}
 }
 
+func (msg *MessageStruct) saveOverlay(overlay *database.OverlayStruct) error {
+	var newIDs []int
+	for k, v := range msg.Overlay.ModuleInfo {
+		if _, ok := overlay.ModuleInfo[k]; ok && !v.IsNew {
+			overlay.ModuleInfo[k].Update(v)
+			continue
+		}
+
+		id, err := overlay.NewModule(v)
+		if err != nil {
+			return err
+		}
+
+		newIDs = append(newIDs, id)
+
+	}
+
+	for k, v := range overlay.ModuleInfo {
+		if _, ok := msg.Overlay.ModuleInfo[k]; !ok && !common.ContainsInt(newIDs, k) {
+			v.Delete()
+			delete(overlay.ModuleInfo, k)
+			continue
+		}
+		v.IsNew = false
+	}
+
+	toSend := &MessageStruct{
+		Type:    OverlayInfo,
+		Overlay: overlay,
+	}
+
+	for _, ws := range overlay.Websockets {
+		err := ws.WriteJSON(toSend)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+
+}
+
 func messageHandler(overlay *database.OverlayStruct, msg *MessageStruct) error {
 	switch msg.Type {
 	case GetOverlay:
 		toSend := &MessageStruct{
-			Type:    Return,
+			Type:    OverlayInfo,
 			Overlay: overlay,
 		}
-		err := overlay.Websocket.WriteJSON(toSend)
+		err := overlay.Websockets[msg.wsID].WriteJSON(toSend)
 		if err != nil {
 			return err
 		}
 		return nil
-
+	case SaveOverlay:
+		return msg.saveOverlay(overlay)
 	}
 	return fmt.Errorf("unknown message type: %d", msg.Type)
 }
@@ -79,7 +123,6 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(key)
 	overlay, err := database.GetOverlayByKey(key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -88,14 +131,17 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := database.GetUserByID(overlay.ID)
-	user.Overlay.Websocket = ws
+	var wsID = len(user.Overlay.Websockets)
+	user.Overlay.Websockets[wsID] = ws
+
 	clients[ws] = user
 
 	eventSub.SubscribeTwitchEvents(user)
 
 	ws.SetCloseHandler(func(code int, text string) error {
-		clients[ws] = nil
-		user.Overlay.Websocket = nil
+		delete(clients, ws)
+		delete(user.Overlay.Websockets, wsID)
+
 		common.Loggers.Info.Printf("Dropped WS Connection with %d\n", user.ID)
 		return nil
 	})
@@ -103,7 +149,9 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 	common.Loggers.Info.Printf("Opened WS Connection with %d\n", user.ID)
 
 	for {
-		msg := &MessageStruct{}
+		msg := &MessageStruct{
+			wsID: wsID,
+		}
 		err := ws.ReadJSON(msg)
 		if err != nil {
 			break

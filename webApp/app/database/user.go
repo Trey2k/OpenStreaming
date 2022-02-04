@@ -98,10 +98,12 @@ func (user *UserStruct) FetchDB() error {
 
 func (user *UserStruct) SendEvent(event *common.EventStruct) error {
 	user.Events = append(user.Events, event)
-	if user.Overlay.Websocket != nil {
-		err := user.Overlay.Websocket.WriteJSON(event)
-		if err != nil {
-			return err
+	if user.Overlay.Websockets != nil {
+		for _, ws := range user.Overlay.Websockets {
+			err := ws.WriteJSON(event)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
