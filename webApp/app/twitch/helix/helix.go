@@ -45,7 +45,7 @@ type HelixClientStruct struct {
 	UserData      TwitchUserData
 	updateRefresh UpdateRefreshTOken
 	ChatBot       *chatbot.ChatBot
-	eventChan     chan common.EventStruct
+	eventChan     chan *common.EventStruct
 }
 
 //TODO: Remove unneeded scope

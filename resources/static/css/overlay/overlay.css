@@ -35,17 +35,21 @@
     flex-direction: column;
     text-align: center;
     overflow: hidden;
+    padding: 1em;
 }
 
 .viewerPFP {
     border-radius: 25%;
+    flex: 1 1 auto;
     opacity: 90%;
 }
 
 .viewerName {
     font-size: 25px;
     color: teal;
+    flex: 1 1 auto;
     font-weight: 800;
+    word-wrap: break-word;
 }
 
 body {

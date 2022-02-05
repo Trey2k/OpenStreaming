@@ -12,20 +12,23 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type MessageType int
-
-type MessageStruct struct {
-	Type    MessageType
+// This exists as a hack to let json parse overlay nicly
+type ReciviedEventStruct struct {
+	Type    common.EventType
 	Overlay *database.OverlayStruct
 	wsID    int
+	Data    common.TwitchEventStruct
 }
 
-const (
-	InvalidMessage = MessageType(iota)
-	GetOverlay
-	OverlayInfo
-	SaveOverlay
-)
+type EventType int
+
+type TwitchEventStruct struct {
+	Channel        string
+	DisplayName    string
+	ProfilePicture string
+	UserID         string
+	MessageContent string
+}
 
 var clients = make(map[*websocket.Conn]*database.UserStruct)
 
@@ -42,8 +45,9 @@ func init() {
 	}
 }
 
-func (msg *MessageStruct) saveOverlay(overlay *database.OverlayStruct) error {
+func saveOverlay(msg *ReciviedEventStruct, overlay *database.OverlayStruct) error {
 	var newIDs []int
+
 	for k, v := range msg.Overlay.ModuleInfo {
 		if _, ok := overlay.ModuleInfo[k]; ok && !v.IsNew {
 			overlay.ModuleInfo[k].Update(v)
@@ -68,8 +72,8 @@ func (msg *MessageStruct) saveOverlay(overlay *database.OverlayStruct) error {
 		v.IsNew = false
 	}
 
-	toSend := &MessageStruct{
-		Type:    OverlayInfo,
+	toSend := &common.EventStruct{
+		Type:    common.OverlayInfo,
 		Overlay: overlay,
 	}
 
@@ -83,11 +87,11 @@ func (msg *MessageStruct) saveOverlay(overlay *database.OverlayStruct) error {
 
 }
 
-func messageHandler(overlay *database.OverlayStruct, msg *MessageStruct) error {
+func messageHandler(overlay *database.OverlayStruct, msg *ReciviedEventStruct) error {
 	switch msg.Type {
-	case GetOverlay:
-		toSend := &MessageStruct{
-			Type:    OverlayInfo,
+	case common.GetOverlay:
+		toSend := &common.EventStruct{
+			Type:    common.OverlayInfo,
 			Overlay: overlay,
 		}
 		err := overlay.Websockets[msg.wsID].WriteJSON(toSend)
@@ -95,8 +99,8 @@ func messageHandler(overlay *database.OverlayStruct, msg *MessageStruct) error {
 			return err
 		}
 		return nil
-	case SaveOverlay:
-		return msg.saveOverlay(overlay)
+	case common.SaveOverlay:
+		return saveOverlay(msg, overlay)
 	}
 	return fmt.Errorf("unknown message type: %d", msg.Type)
 }
@@ -132,6 +136,10 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := database.GetUserByID(overlay.ID)
 	var wsID = len(user.Overlay.Websockets)
+	if user.Overlay.Websockets == nil {
+		user.Overlay.Websockets = make(map[int]*websocket.Conn)
+	}
+
 	user.Overlay.Websockets[wsID] = ws
 
 	clients[ws] = user
@@ -149,7 +157,7 @@ func OverlayWSHandler(w http.ResponseWriter, r *http.Request) {
 	common.Loggers.Info.Printf("Opened WS Connection with %d\n", user.ID)
 
 	for {
-		msg := &MessageStruct{
+		msg := &ReciviedEventStruct{
 			wsID: wsID,
 		}
 		err := ws.ReadJSON(msg)

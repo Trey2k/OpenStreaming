@@ -18,48 +18,57 @@ func init() {
 		os.Exit(1)
 	}
 
-	common.Loggers.Info.Printf("Viewers table being reconstructed\n")
-	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.viewers")
+	makeViewers := false
+	makeOverlays := false
+	makeOverlayModules := false
+	makeUsers := false
+
+	_, err = conn.Query(context.Background(), "SELECT * FROM public.viewers")
 	if err != nil {
-		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
+		makeViewers = true
 	}
 
-	common.Loggers.Info.Printf("Users table being reconstructed\n")
-	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.users")
+	_, err = conn.Query(context.Background(), "SELECT * FROM public.overlays")
 	if err != nil {
-		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
+		makeOverlays = true
 	}
 
-	common.Loggers.Info.Printf("Overlays table being reconstructed\n")
-	_, err = conn.Query(context.Background(), "DROP TABLE IF EXISTS public.overlays")
+	_, err = conn.Query(context.Background(), "SELECT * FROM public.\"overlayModules\"")
 	if err != nil {
-		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
+		makeOverlayModules = true
 	}
 
-	common.Loggers.Info.Printf("OverlayModules table being reconstructed\n")
-	_, err = conn.Query(context.Background(), `DROP TABLE IF EXISTS public."overlayModules"`)
+	_, err = conn.Query(context.Background(), "SELECT * FROM public.users")
 	if err != nil {
-		common.Loggers.Error.Fatalf("Error while querying DB:\n%s\n", err)
+		makeUsers = true
 	}
 
-	err = createUsersTable()
-	if err != nil {
-		common.Loggers.Error.Fatalf("Error while creating users table:\n%s\n", err)
+	if makeViewers {
+		err = createViewersTable()
+		if err != nil {
+			common.Loggers.Error.Fatalf("Error while creating viewers table:\n%s\n", err)
+		}
 	}
 
-	err = createOverlaysTable()
-	if err != nil {
-		common.Loggers.Error.Fatalf("Error while creating overlays table:\n%s\n", err)
+	if makeOverlays {
+		err = createOverlaysTable()
+		if err != nil {
+			common.Loggers.Error.Fatalf("Error while creating overlays table:\n%s\n", err)
+		}
 	}
 
-	err = createViewersTable()
-	if err != nil {
-		common.Loggers.Error.Fatalf("Error while creating viewers table:\n%s\n", err)
+	if makeOverlayModules {
+		err = createOverlayModulesTable()
+		if err != nil {
+			common.Loggers.Error.Fatalf("Error while creating overlayModules table:\n%s\n", err)
+		}
 	}
 
-	err = createOverlayModulesTable()
-	if err != nil {
-		common.Loggers.Error.Fatalf("Error while creating overlayModules table:\n%s\n", err)
+	if makeUsers {
+		err = createUsersTable()
+		if err != nil {
+			common.Loggers.Error.Fatalf("Error while creating users table:\n%s\n", err)
+		}
 	}
 
 }

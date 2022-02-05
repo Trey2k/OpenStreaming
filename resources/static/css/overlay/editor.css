@@ -41,7 +41,7 @@
 .moduleTitle {
     top: -40px;
     font-size: 25px;
-    position: relative;
+    position: absolute;
 }
 
 .ui-resizable-handle {

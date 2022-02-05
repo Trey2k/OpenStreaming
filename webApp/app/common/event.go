@@ -1,8 +1,10 @@
 package common
 
 type EventStruct struct {
-	Type EventType
-	Data TwitchEventStruct
+	Type    EventType
+	Overlay interface{}
+	WSid    int
+	Data    TwitchEventStruct
 }
 
 type EventType int
@@ -12,6 +14,9 @@ const (
 	TestEvent
 	TwitchMessageEvent
 	TwitchFollow
+	GetOverlay
+	OverlayInfo
+	SaveOverlay
 )
 
 type TwitchEventStruct struct {
